@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+
+	<!-- 扫描注解的包,使被扫描到的注解起作用 
+		扫描 (base-package)包(包括子包)下所有的类 
+		base-package : 被扫描的包(包括子包) 
+		use-default-filters : false 不使用默认的filters -->
+	<context:component-scan base-package="cn.hc.shop"
+		use-default-filters="false">
+		<!-- 只扫描指定包下的指定的注解 @controller -->
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- 视图解析器 : InternalResourceViewResolver 把逻辑视图解析成物理视图 
+		怎么解析? 逻辑视图 在springmvc中有一个视图名(view-name) 
+		/WEB-INF/jsp/view-name.jsp -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 解析视图时,value加在view-name的前面 (前缀) -->
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<!-- 后缀 -->
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	<!-- 解决静态资源被 serlvetDispather 拦截的问题 -->
+	<mvc:default-servlet-handler />
+	<!-- 使用mvc注解驱动:会自动注册三个 bean -->
+	<mvc:annotation-driven />
+
+
+	<!--避免IE执行AJAX时，返回JSON出现下载文件 -->
+	<bean id="mappingJacksonHttpMessageConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+		<property name="supportedMediaTypes">
+			<list>
+				<value>text/html;charset=UTF-8</value>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- 
+		springmvc进行文件上传时，需要配置 MultipartResolver 
+		注意：这个bean的id不能少
+		 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 字符编码 -->
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<!-- 限制上传文件的最大值 -->
+		<property name="maxUploadSize" value="1024000"></property>
+	</bean>
+
+</beans>

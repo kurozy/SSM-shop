@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+	
+	<!-- 
+		扫描注解的包,使被扫描到的注解起作用 
+			扫描 (base-package)包(包括子包)下所有的类
+		base-package : 被扫描的包(包括子包)
+	-->
+	<context:component-scan base-package="cn.hc.shop">
+		<!-- 排除扫描  Controller 这个注解 -->
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+	
+	<!-- 引入外部配置文件  jdbc.properties -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	
+	<!-- 
+		配置数据源 
+		class:数据源类型 c3p0-0.9.2.1.jar   
+				mchange-commons-java-0.2.3.4.jar
+		destroy-method:销毁方法		
+		scope:指 bean	作用域范围   singleton 单实例
+	-->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close" scope="singleton">
+		<!-- 
+			下面为参数:即连接数据库的信息
+			value:用EL表达式通过 jdbc.properties 配置文件中的key得到值
+		 -->
+		<property name="driverClass" value="${jdbc.driver}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+
+	<!-- 创建SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 引用  dataSource 数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 引入 mybatis 的全局配置文件 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+		<!-- 引入mapper.xml文件 -->
+		<property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+		<!-- 配置别名的包:让包下所有的类都有一个默认的别名 -->
+		<property name="typeAliasesPackage" value="cn.hc.shop.entities"></property>
+	</bean>
+
+	<!-- 
+		配置mapper接口的扫描器
+			使指定包下的mapper接口生成相应的代理实现类
+	 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定扫描的包 -->
+		<property name="basePackage" value="cn.hc.shop.dao"></property>
+		<!-- 
+			原理：使用sqlSessionFactoryBeanName 注入，不会立即初始化sqlSessionFactory, 
+			所以不会引发提前初始化问题。
+			
+			 注入sqlSessionFactory，后面的value是SqlSessionFactory的bean的名字，
+			 也就是sqlSessionFactory的id当我们的mapperscannerconfigurer启动的时候，
+			 可能会出现我们的jdbc.properties文件未被加载，这样的话它拿到的DataSource就是错误的，
+			 因为像${jdbc.url}这类的属性还没有被替换掉，所以通过BeanName后处理的方式，
+			 当我们去用我们的Mybatis的时候，它才会去找我们对应的sqlSessionFactory，
+			 为了防止它提前初始化我们的sqlSessionFactory
+		 -->
+		 <!-- 注意:这里是value,不是 ref -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+
+	<!-- 
+		配置事务管理器:用来管理使用数据源进行jdbc操作时发生的事务
+	 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 注入数据源-->
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- 开启注解声明式事务，使用事务管理器 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>
