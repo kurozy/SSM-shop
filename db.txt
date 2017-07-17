@@ -1,0 +1,60 @@
+项目设计：
+
+一、根据效果图设计数据库表
+
+1、登录、注册
+
+	1) 用户表    users
+		
+		主键:  	user_id         int	
+		用户名: 	user_name		varchar
+		密码: 	password		varchar
+		邮箱:    email			varchar	
+		真实姓名: name
+		电话:    phone
+		地址:    address
+		状态:    status
+		激活码:	code
+		
+	2) 一级菜单	category
+	
+		主键: 	category_id
+		菜单名称:	category_name
+		
+		
+	3) 二级菜单	category_second
+		
+		主键: 		category_second_id
+		菜单名称:		category_second_name
+		一级菜单id:	category_id    外键   -->  一级菜单的主键
+		
+		
+	4) 商品表:		product
+		主键: 		product_id
+		商品名称:     product_name
+		参考价:		market_price
+		商城价:		shop_price
+		商品图片:     image
+		商品描述:     product_desc
+		库存:		stock
+		是否热销:     is_hot
+		商品上架时间:	product_date
+		二级菜单id:	category_second_id
+		
+		
+	5) 订单表:		orders
+		主键:		orders_id
+		总价格:		total_price
+		下单时间:     order_time
+		状态:		order_state
+		用户id		user_id			  外键 -->	用户表的主键
+		
+		
+		
+	6) 订单明细:		order_item
+		主键:		order_item_id
+		数量			count
+		总价格       		totalPrice
+		商品id    	product_id    外键 --> 商品表的主键
+		订单id		orders_id	     外键 --> 订单的主键
+		

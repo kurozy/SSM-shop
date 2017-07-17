@@ -1,0 +1,13 @@
+怎么搭框架?
+
+1.导jar包
+
+2.导入 log4j.properties、jdbc.properties
+
+3.增加 mybatis 全局配置文件
+  mybatis 逆向工程生成 javabean、mapper接口、mapper.xml
+      推荐新建一个java project 去操作,然后把生成的文件复制到当前工程的相应目录下
+
+4.增加 spring-mybatis.xml 文件
+
+5.增加 spring-mvc.xml 文件
